@@ -1,0 +1,85 @@
+
+/* ---- Header ---- */
+
+.fc   { background-color: #A8DCFF; }
+.ft   { background-color: transparent; }
+.menu { background-color: #eeeeee; }
+
+
+/* ---- File content ---- */
+
+.src-wrapper { 
+    width: 100%;
+}
+
+.src-numbers { 
+    float: left;
+    padding-right: 5px;
+    border-right: 1px solid #eee;
+}
+.src-numbers a {
+    color: #bbb;
+    text-decoration: none;
+    padding: 5px;
+}
+.src-numbers a:hover {
+    color: white;
+    background-color: #ccc;
+    border-radius: 5px;
+}
+.src-content {
+    float: left; 
+    width: 1px;
+    padding-left: 10px;
+}
+
+//.src-include a { color: green;}
+.src-string  { color: #9E0202; }
+.src-comment { color: green; }
+
+
+/**
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    contenteditable attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that are clearfixed.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+.clearfix:before,
+.clearfix:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+.clearfix:after {
+    clear: both;
+}
+
+
+/* ---- SVN ---- */
+
+#svn-button {
+    padding: 3px;
+    text-decoration: none;
+    font: 0.6em "Bitstream Vera Sans", sans-serif;
+    background: #f2f1ef;
+    border: 1px solid #908f8d;
+    border-radius: 3px;
+    box-shadow:
+      inset 0 1px #fff,
+      inset 0 -1px #d9d8d7,
+      inset 0 2px 2px #fff,
+      inset 0 -3px 2px #d9d8d7,
+      inset 0 4px 6px #fff,
+      inset 0 -4px 6px #d9d8d7,
+      inset 0 7px 10px #fff,
+      inset 0 -7px 10px #d9d8d7,
+      0 0 3px rgba(144,143,141,0.75);
+}
+#svn-button:hover { background-color: #fff; }
+
+.svn-external    { font-size: 100%; color: red; }
+.svn-info-block  { padding-left: 30px; }
+.svn-info-entry  { padding-left: 30px; font-weight: normal; }
+.svn-branch-name { font-weight: bold; }

@@ -1,0 +1,8 @@
+/**
+ * @file controller.js
+ *
+ * Interacts with web-server for sending and recieving data.
+ *//**
+ * Global variable to set value of failed record requests
+ * to true/false.
+ */function record_changesets(a,b,c,d,e){if(!a&&!b)return;arguments.length==4&&typeof arguments[3]=="function"&&(e=arguments[3],d=undefined);var f=10,g=get_final_code(a),h={changesets:JSON.stringify(a),final_code:g};$("#editor-save-code").html("Saving..."),$.ajax({url:"/code_player/record/"+b+"/",type:"POST",retry:c,code_video_id:b,post_data:h,async:d,data:h,success:function(a){a.status=="OK"?(animate_save("#editor-save-code",!0),g_record_request_failed&&(g_record_request_failed=!1,finish_all_recordings()),e!=undefined&&typeof e=="function"&&e()):animate_save("#editor-save-code",!1)},error:function(a){animate_save("#editor-save-code",!1);if(!this.async)return;if(NOT_ALLOWED_ERROR_CODES.indexOf(a.status)>=0)return;g_record_request_failed=!0,this.retry+=1;var b=this.retry,c=this.async,d=JSON.parse(this.post_data.changesets),e=this.code_video_id,g=function(){return function(){record_changesets(d,e,b,c)}}(d,e,b,c);this.retry<=f&&setTimeout(g,1e4)}})}function setup_video(a,b,c){$.ajax({url:"/code_player/setup_video/",type:"POST",data:a,dataType:"json",callback:b,callback_arg_obj:c,success:function(a){this.callback(a,this.callback_arg_obj)},error:function(a){}})}function load_video(a){var b=$.ajax({url:"/code_player/play/"+a+"/",type:"GET",dataType:"json",async:!1,success:function(a){},error:function(a){console.log(a)}});return b.status==200?JSON.parse(b.responseText):!1}var g_record_request_failed=!1,NOT_ALLOWED_ERROR_CODES=[500];
