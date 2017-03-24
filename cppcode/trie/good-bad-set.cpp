@@ -9,19 +9,24 @@ using namespace std;
 
 struct trnode {
 	bool present{false};
+	bool haschild{false};
 	vector<trnode*> children{charlen,NULL};
 };
 
 int insert(trnode* tn, string& str, int idx){
 	trnode* &tmp = tn->children[str[idx]-offset];
-	if(!tmp)
+	if(!tmp){
 		tmp=new trnode;
-	if(tmp->present) return -1;		
+	}
 	if(idx == str.length()-1){
+		if(tmp->present || tmp->haschild) return -1;
 		tmp->present=true;
 		return 0;		
-	}else
+	}else{
+		if(tmp->present) return -1;
+		tmp->haschild = true;
 		return insert(tmp,str,idx+1);
+	}
 }
 
 int main() {
@@ -32,8 +37,10 @@ int main() {
 	for(int i=0;i<n;i++){
 		cin>>tmp;
 		res = insert(&trnd,tmp,idx);	
-		if(res == -1)
-			cout<<"BAD SET\n"<<tmp;
+		if(res == -1){
+			cout<<"BAD SET\n"<<tmp<<endl;
+			return 0;
+		}
 		else if(res == 0 && i == n-1)
 			cout<<"GOOD SET\n";
 	}
