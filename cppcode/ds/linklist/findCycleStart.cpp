@@ -1,5 +1,4 @@
 #include <iostream>
-#include <unordered_set>
 
 using namespace std;
 
@@ -18,15 +17,21 @@ void printll(node *head){
 }
 
 int findCycleStart(node *head){
-	unordered_set<node*> snode;
-	while(head && (snode.find(head) == snode.end())){
-		snode.insert(head);
-		head = head->next;
+	node *slow = head->next, *fast = head->next->next;
+	//find the node where they first meet
+	
+	while(slow != fast){
+		slow = slow->next;
+		fast = fast->next->next;
 	}
-	if(head)
-		return head->data;
-	else 
-		return -1;
+	//move one of them to head
+	fast = head;
+	//now the meeting point of fast and slow will the cycle start point
+	while(slow != fast){
+		slow = slow->next;
+		fast = fast->next;
+	}
+	return slow->data;
 }
 
 int main() {
@@ -42,7 +47,7 @@ int main() {
 	h3->next = h4;	
 	h4->next = h5;
 	h5->next = h3;
-	printll(head);	
-	cout << findCycleStart(head);
+//	printll(head);	
+	cout << findCycleStart(head) << endl;
 	return 0;
 } 

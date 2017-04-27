@@ -4,18 +4,15 @@
 using namespace std;
 
 class test{
-	int mem1=0;
+	const static int mem1 = 0;
 	public:
-		void const_test(int& x){
-			x += 2;
-			mem1 +=1;
-			cout <<x<<"mem1 is "<<mem1<<endl;
+		test(){
 		}
+		int getTotal(){ return mem1;}
 };
 
 int main() {
 	test tt;
-	int s =10;
-	tt.const_test(s);
+	cout << tt.getTotal() << endl;
 	return 0;
 }
