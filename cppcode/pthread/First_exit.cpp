@@ -17,7 +17,7 @@ pthread_mutex_t exit_mutex = PTHREAD_MUTEX_INITIALIZER;
 int g_data = 0;
 int data[NUM_ELEMS];
 
-void find_num(void* t_data)
+void* find_num(void* t_data)
 {
 	th_data* tmp = (th_data*)t_data;
 	int idx = tmp->start_idx*NUM_ELEMS/NUM_THREADS, end_idx = (tmp->start_idx + 1) * NUM_ELEMS/NUM_THREADS;
