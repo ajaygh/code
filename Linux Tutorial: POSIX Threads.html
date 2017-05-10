@@ -1,0 +1,1811 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <title>Linux Tutorial: POSIX Threads</title>
+  <link rel="stylesheet" href="yolinux.css" type="text/css" />
+  <link rel="canonical" href="http://www.yolinux.com/TUTORIALS/LinuxTutorialPosixThreads.html" />
+  <meta name="keywords" content="POSIX threads,pthread,thread library,Tutorial,examples,info,links,linux" />
+  <meta name="description" content="POSIX Pthread libraries on Linux. YoLinux: Linux Information Portal includes informative tutorials and links to many Linux sites." />
+  <meta name="author" content="Greg Ippolito" />
+  <link type="text/css" rel="stylesheet" href="syntaxhighlighter/styles/shCoreYoLinux.css"/>
+  <link type="text/css" rel="stylesheet" href="syntaxhighlighter/styles/shThemeYoLinux.css"/>
+  <script type="text/javascript" src="syntaxhighlighter/src/shCoreYoLinux.js"></script>
+  <script type="text/javascript" src="syntaxhighlighter/scripts/shBrushCpp.js"></script>
+  <script type="text/javascript">
+        SyntaxHighlighter.config.clipboardSwf = 'syntaxhighlighter/scripts/clipboard.swf';
+        SyntaxHighlighter.all();
+  </script>
+</head>
+
+<body>
+<a name="TOP"></a>
+<table cellpadding="4" width="100%">
+  <tbody>
+    <tr>
+      <td valign="top">
+      <a href="http://www.yolinux.com/"><img src="images/YoLinux_Tutorial_logo.png" alt="Yolinux.com Linux logo" border="none" /></a>
+      </td>
+      <td valign="top">
+      <h1>POSIX thread (pthread) libraries</h1>
+
+      <p>
+The POSIX thread libraries are a standards based thread API for C/C++.
+It allows one to spawn a new concurrent process flow. It is most effective
+on multi-processor or multi-core systems where the process flow can be scheduled to run on 
+another processor thus gaining speed through parallel or distributed processing.
+Threads require less overhead than "forking" or spawning a new process because 
+the system does not initialize a new system virtual memory space and environment for
+the process. While most effective on a multiprocessor system, gains are
+also found on uniprocessor systems which exploit latency in I/O and other
+system functions which may halt process execution. (One thread may execute
+while another is waiting for I/O or some other system latency.)
+Parallel programming technologies such as MPI and PVM are used in a distributed
+computing environment while threads are limited to a single computer system.
+All threads within a process share the same address space.
+A thread is spawned by defining a function and its arguments which will
+be processed in the thread.
+The purpose of using the POSIX thread library in your software is 
+to execute  software faster.
+      </p>
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<p>
+</p>
+<table>
+  <tbody>
+    <tr>
+      <td valign="top" width="70%">
+      <b>Table of Contents:</b>
+      <ul>
+        <li># <a href="#BASICS">Thread Basics</a>
+        </li>
+        <li># <a href="#CREATIONTERMINATION">Thread Creation and Termination</a>
+        </li>
+        <li># <a href="#SYNCHRONIZATION">Thread Synchronization</a>
+        </li>
+        <li># <a href="#SCHEDULING">Thread Scheduling</a>
+        </li>
+        <li># <a href="#PITFALLS">Thread Pitfalls</a>
+        </li>
+        <li># <a href="#DEBUGGING">Thread Debugging</a>
+        </li>
+        <li># <a href="#MANPAGES">Thread Man Pages</a>
+        </li>
+        <li># <a href="#LINKS">Links</a>
+        </li>
+        <li># <a href="#BOOKS">Books</a>
+        </li>
+      </ul>
+
+      <p>
+      </p>
+      </td>
+
+      <td align="right" valign="bottom">
+<div align="center">
+<iframe class="adframe" scrolling="no" allowTransparency="true"
+marginheight="0" marginwidth="0"
+width="720" frameborder="0" height="90"
+scrolling="no" style='border:none;width:720;height:90;padding:0;'
+src="/ADVERTISING/iframe728x90px-ValueClick.html">
+</iframe>
+</div>
+
+      </td>
+    </tr>
+  </tbody>
+</table>
+
+<a name="BASICS"></a>
+<p>
+</p>
+<!-- Navigation Menu bar -->
+<div id="globalNavigation">
+<table bgcolor="#000000" width="100%">
+<tbody>
+<tr bgcolor="#000000">
+<td colspan="3">
+<form method="post" action="http://search.yolinux.com/cgi-bin/htsearch">
+<input type="hidden" name="method" value="all" /> 
+<input type="hidden" name="format" value="long" /> 
+<input type="hidden" name="sort" value="score" /> 
+<input type="hidden" name="config" value="htdig-yolinux" /> 
+<input type="hidden" name="restrict" value="" /> 
+<input type="hidden" name="exclude" value="" /> 
+<label for="search">search</label>
+<input type="text" size="20" maxlength="80" name="words" id="search"/> 
+<input type="submit" value="Search"/>
+</form>
+</td>
+<td align="right">
+<font color="#f7bc33" size="-1">
+<b>
+&nbsp;|&nbsp;
+<a href="/" class="menubar" title="YoLinux Home Page">Home Page</a>&nbsp;|&nbsp;
+<a href="/TUTORIALS/" class="menubar" title="YoLinux Web Site Tutorials Index">Linux Tutorials</a>&nbsp;|&nbsp;
+<a href="/YoLinux-Terms.html" class="menubar" title="YoLinux.com terms of use" rel="nofollow">Terms</a>&nbsp;|&nbsp;
+<a href="/privacy.html" class="menubar" title="YoLinux.com privacy policy" rel="nofollow">Privacy Policy</a>&nbsp;|&nbsp;
+<a href="/YoLinux-Advertising.html" class="menubar" title="Advertising rates for YoLinux.com">Advertising</a>&nbsp;|&nbsp;
+<a href="/YoLinuxEmailForm.html" class="menubar" title="Send us an email" rel="nofollow">Contact</a> &nbsp;|&nbsp;
+</b>
+</font>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<!-- End of Navigation menu bar -->
+
+<table class="main" cellpadding="4" cellspacing="1">
+  <tbody>
+    <tr class="main">
+      <td class="leftcol">
+      <p>
+      <font size="-1">
+      <b>Related YoLinux Tutorials:</b>
+      </font></p>
+      <p>
+      <font size="-1">&deg; <a href="LinuxTutorialC++.html">C++ on Linux</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg; <a href="LinuxTutorialC++STL.html">C++ STL (Standard Template Library) example of a linked list using a list</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg; <a href="LinuxTutorialC++StringClass.html">C++ string class examples</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg; <a href="LinuxTutorialXemacs.html">X-emacs and C++ development</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg; <a href="LinuxTutorialC++Structures.html">C++ Structure Example and Tutorial</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg; <a href="LinuxTutorialSoftwareDevelopment.html">Linux software development tutorial</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg;<a href="Cpp-GoogleTest.html">Google C++ Unit Test</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg;<a href="Jenkins.html">Jenkins CI</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg;<a href="Jenkins-Cpp-builds.html">Jenkins Plugins for C++</a>
+      </font></p>
+      <p>
+      <font size="-1">&deg;<a href="/TUTORIALS/">YoLinux Tutorials Index</a>
+      </font></p>
+
+
+<hr />
+<p>
+<!-- BEGIN RICH-MEDIA CODE -->
+<script type="text/javascript"><!--
+google_ad_client = "pub-8567479315106986";
+/* 160x600, YoLinux default */
+google_ad_slot = "8947481941";
+google_ad_width = 160;
+google_ad_height = 600;
+//-->
+</script>
+<script type="text/javascript"
+src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+</p>
+<hr />
+<p>
+<!-- Ad links -->
+<script type="text/javascript"><!-- 
+google_ad_client = "pub-8567479315106986";
+google_ad_width = 160;
+google_ad_height = 90;
+google_ad_format = "160x90_0ads_al_s";
+google_ad_channel ="";
+google_color_border = "FFFFFF";
+google_color_bg = "C0C0C0";
+google_color_link = "0000FF";
+google_color_text = "000000";
+google_color_url = "008000";
+//-->
+</script>
+<script type="text/javascript"
+  src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+</p>
+<!-- END CODE -->
+<hr />
+<p>
+<a href="http://yolinux.tradepub.com/">Free Information Technology Magazines and Document Downloads<br /><img src="images/TradePubMagazines.gif" border="0" alt="TradePub link image" /></a>
+</p>
+<hr />
+
+
+      <p>
+      <a href="http://yolinux.tradepub.com/?pt=cat&amp;page=Infosoft">Free Information Technology <b>Software and Development</b> Magazine Subscriptions and Document Downloads</a>
+      </p>
+      <p>
+      </p>
+      <hr />
+      <p>
+      </p>
+</td>
+
+<td class="content">
+
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td>Thread Basics:</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+</p>
+<ul>
+<li>Thread operations include thread creation, termination,
+synchronization (joins,blocking), scheduling, data management and
+process interaction.
+</li>
+<li>A thread does not maintain a list of created threads, nor does it know the
+thread that created it.
+</li>
+<li>All threads within a process share the same address space.
+</li>
+<li>Threads in the same process share:
+    <ul>
+    <li>Process instructions
+    </li>
+    <li>Most data
+    </li>
+    <li>open files (descriptors)
+    </li>
+    <li>signals and signal handlers
+    </li>
+    <li>current working directory
+    </li>
+    <li>User and group id
+    </li>
+    </ul>
+</li>
+<li>Each thread has a unique:
+    <ul>
+    <li>Thread ID
+    </li>
+    <li>set of registers, stack pointer
+    </li>
+    <li>stack for local variables, return addresses
+    </li>
+    <li>signal mask
+    </li>
+    <li>priority
+    </li>
+    <li>Return value: <tt>errno</tt>
+    </li>
+    </ul>
+</li>
+<li>pthread functions return "0" if OK.
+</li>
+</ul>
+
+<a name="CREATIONTERMINATION"></a>
+<p>
+</p>
+<hr size="5" />
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td>Thread Creation and Termination:</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+Example: <tt>pthread1.c</tt>
+</p>
+<dl>
+<dd>
+<table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+<tbody>
+<tr bgcolor="#c0c0c0">
+<td>
+<pre class="brush: cpp">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+
+void *print_message_function( void *ptr );
+
+main()
+{
+     pthread_t thread1, thread2;
+     const char *message1 = "Thread 1";
+     const char *message2 = "Thread 2";
+     int  iret1, iret2;
+
+    /* Create independent threads each of which will execute function */
+
+     iret1 = pthread_create( &amp;thread1, NULL, print_message_function, (void*) message1);
+     if(iret1)
+     {
+         fprintf(stderr,"Error - pthread_create() return code: %d\n",iret1);
+         exit(EXIT_FAILURE);
+     }
+
+     iret2 = pthread_create( &amp;thread2, NULL, print_message_function, (void*) message2);
+     if(iret2)
+     {
+         fprintf(stderr,"Error - pthread_create() return code: %d\n",iret2);
+         exit(EXIT_FAILURE);
+     }
+
+     printf("pthread_create() for thread 1 returns: %d\n",iret1);
+     printf("pthread_create() for thread 2 returns: %d\n",iret2);
+
+     /* Wait till threads are complete before main continues. Unless we  */
+     /* wait we run the risk of executing an exit which will terminate   */
+     /* the process and all threads before the threads have completed.   */
+
+     pthread_join( thread1, NULL);
+     pthread_join( thread2, NULL); 
+
+     exit(EXIT_SUCCESS);
+}
+
+void *print_message_function( void *ptr )
+{
+     char *message;
+     message = (char *) ptr;
+     printf("%s \n", message);
+}
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+
+<p>
+Compile: 
+</p>
+      <ul>
+        <li>C compiler: <tt>cc -pthread pthread1.c</tt> (<b>or</b> <tt>cc -lpthread pthread1.c</tt>)
+            <br />
+ or 
+        </li>
+        <li>C++ compiler: <tt>g++ -pthread pthread1.c</tt> (<b>or</b> <tt>g++ -lpthread pthread1.c</tt>)
+        </li>
+      </ul>
+      The GNU compiler now has the command line option "-pthread" while older versions of the compiler specify the pthread library explicitly with "-lpthread".
+      <p>
+Run: <tt>./a.out</tt>
+      </p>
+Results:
+<dl>
+<dd>
+<small>
+<pre>
+Thread 1
+Thread 2
+Thread 1 returns: 0
+Thread 2 returns: 0
+</pre>
+</small>
+</dd>
+</dl>
+
+      <p>
+Details:
+      </p>
+      <ul>
+        <li>In this example the same function is used in each thread. The arguments
+    are different. The functions need not be the same.
+          <p>
+          </p>
+        </li>
+        <li>Threads terminate by explicitly calling <tt>pthread_exit()</tt>,
+    by letting the function return, or by a call to the function <tt>exit()</tt>
+    which will terminate the process including any threads.
+          <p>
+          </p>
+        </li>
+        <li>Function call: <b><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_create">pthread_create</a></b> - create a new thread
+<table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+<tbody>
+<tr bgcolor="#c0c0c0">
+<td> 
+<pre>
+    int pthread_create(pthread_t * thread, 
+                       const pthread_attr_t * attr,
+                       void * (*start_routine)(void *), 
+                       void *arg);
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+
+    Arguments:
+    <ul>
+    <li><tt>thread</tt> - returns the thread id. (unsigned long int defined in bits/pthreadtypes.h)
+    </li>
+        <li><tt>attr</tt> - Set to NULL if default thread attributes are used.
+        (else define members of the struct <tt>pthread_attr_t</tt> defined in 
+         bits/pthreadtypes.h)
+        Attributes include:
+        <small>
+        <ul>
+        <li>detached state (joinable? Default: PTHREAD_CREATE_JOINABLE. Other option: PTHREAD_CREATE_DETACHED)
+        </li>
+        <li>scheduling policy (real-time? PTHREAD_INHERIT_SCHED,PTHREAD_EXPLICIT_SCHED,SCHED_OTHER)
+        </li>
+        <li>scheduling parameter
+        </li>
+        <li>inheritsched attribute (Default: PTHREAD_EXPLICIT_SCHED Inherit from parent thread: PTHREAD_INHERIT_SCHED)
+        </li>
+        <li>scope (Kernel threads: PTHREAD_SCOPE_SYSTEM User threads: PTHREAD_SCOPE_PROCESS Pick one or the other not both.)
+        </li>
+        <li>guard size
+        </li>
+        <li>stack address (See unistd.h and bits/posix_opt.h _POSIX_THREAD_ATTR_STACKADDR)
+        </li>
+        <li>stack size (default minimum PTHREAD_STACK_SIZE
+            set in pthread.h), 
+        </li>
+        </ul>
+        </small>
+    </li>
+    <li><tt>void * (*start_routine)</tt> - pointer to the function to be threaded. Function has a single argument: pointer to void. 
+    </li>
+    <li><tt>*arg</tt> - pointer to argument of function. To pass multiple arguments, send a pointer to a structure.
+    </li>
+    </ul>
+
+    <p>
+    </p>
+    </li>
+    <li>Function call: <b><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_join">pthread_join</a></b> - wait for termination of another thread
+<table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+<tbody>
+<tr bgcolor="#c0c0c0">
+<td> 
+<pre>
+    int pthread_join(pthread_t th, void **thread_return);
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+Arguments:
+<ul>
+<li><tt>th</tt> - thread suspended until the thread identified by th terminates, either by calling  pthread_exit() or by being cancelled.
+</li>
+<li><tt>thread_return</tt> - If  thread_return is not NULL, the return value of th is stored in the location pointed to by thread_return.
+</li>
+</ul>
+        <p>
+        </p>
+    </li>
+    <li>Function call: <b><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_exit">pthread_exit</a></b> - terminate the calling thread
+<table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+<tbody>
+<tr bgcolor="#c0c0c0">
+<td> 
+<pre>
+    void pthread_exit(void *retval);
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+
+    Arguments:
+    <ul>
+    <li><tt>retval</tt> - Return value of pthread_exit().
+    </li>
+    </ul>
+    <p>
+    This routine kills the thread. The <tt>pthread_exit()</tt> function never 
+    returns. If the thread is not detached, the thread id and return value
+    may be examined from another thread by using pthread_join().
+    <br />
+    Note: the return pointer <tt>*retval</tt>, must not be of local scope
+    otherwise it would cease to exist once the thread terminates.
+    </p>
+    <p>
+    </p>
+        </li>
+        <li><font color="#ff0000">[C++ pitfalls]</font>: The above sample program 
+        <b>will</b> compile with the GNU C <b>and</b> C++ compiler <tt>g++</tt>.
+        The following function pointer representation below
+        will work for C but not C++. Note the subtle differences and avoid the
+        pitfall below:
+<dl><dd>    
+<pre class="brush: cpp">
+void print_message_function( void *ptr );
+...
+...
+iret1 = pthread_create( &amp;thread1, NULL, (void*)&amp;print_message_function, (void*) message1);
+...
+...
+</pre>
+</dd></dl>
+        </li>
+      </ul>
+
+<a name="SYNCHRONIZATION"></a>
+<p>
+</p>
+<hr size="5" />
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td>Thread Synchronization:</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+The threads library provides three synchronization mechanisms:
+</p>
+      <ul>
+        <li>mutexes - Mutual exclusion lock: Block access to variables
+by other threads. This enforces exclusive access by a thread to a
+variable or set of variables.
+</li>
+        <li>joins - Make a thread wait till others are complete (terminated).
+        </li>
+        <li>condition variables - data type <tt>pthread_cond_t</tt>
+        </li>
+      </ul>
+
+      <p>
+      </p>
+      <hr />
+      <h3>Mutexes:</h3>
+
+Mutexes are used to prevent data inconsistencies due to operations by multiple
+threads upon the same memory area performed at the same time or to prevent race conditions where an order of operation upon the memory is expected.
+A contention or race condition often occurs when two or more threads need to perform operations on the same
+memory area, but the results of computations depends on 
+the order in which these operations are performed. Mutexes are used for 
+serializing shared resources such as memory.  Anytime a global resource is accessed by more 
+than one thread the resource should have a Mutex associated with it. 
+One can apply a mutex to protect a segment of memory ("critical region") from other threads.
+Mutexes can be applied only to threads in a single process and do not work
+between processes as do semaphores.
+      <p>
+Example threaded function:
+      </p>
+      <dl>
+        <dd>
+          <table border="1">
+
+            <tbody>
+              <tr bgcolor="#c0c0c0">
+                <th colspan="2">Without Mutex</th>
+                <th colspan="2">With Mutex</th>
+              </tr>
+
+              <tr>
+                <td colspan="2" valign="top">
+                <pre class="brush: cpp">
+
+int counter=0;
+
+/* Function C */
+void functionC()
+{
+
+   counter++
+
+}
+                </pre>
+
+                </td>
+                <td colspan="2">
+<pre class="brush: cpp">
+/* Note scope of variable and mutex are the same */
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+int counter=0;
+
+/* Function C */
+void functionC()
+{
+   pthread_mutex_lock( &amp;mutex1 );
+   counter++
+   pthread_mutex_unlock( &amp;mutex1 );
+}
+</pre>
+
+                </td>
+              </tr>
+
+              <tr bgcolor="#c0c0c0">
+                <td colspan="4">Possible execution sequence</td>
+              </tr>
+
+              <tr>
+                <th>Thread 1</th>
+                <th>Thread 2</th>
+                <th>Thread 1</th>
+                <th>Thread 2</th>
+              </tr>
+
+              <tr>
+                <td>
+counter = 0
+                </td>
+                <td>
+counter = 0
+                </td>
+                <td>
+counter = 0
+                </td>
+                <td>
+counter = 0
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+counter = 1
+                </td>
+                <td>
+counter = 1
+                </td>
+                <td>
+counter = 1
+                </td>
+                <td>
+Thread 2 locked out.<br />
+Thread 1 has exclusive use of variable <tt>counter</tt>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                <br />
+
+                </td>
+                <td>
+                <br />
+
+                </td>
+                <td>
+                <br />
+
+                </td>
+                <td>
+counter = 2
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+
+        </dd>
+      </dl>
+
+      <p>
+If register load and store operations for the incrementing of variable <tt>counter</tt>
+occurs with unfortunate timing, it is theoretically possible to have each 
+thread increment and overwrite the same variable with the same value.
+Another possibility is that thread two would first increment <tt>counter</tt> 
+locking out thread one until complete and then thread one would increment it to 2.
+      <br />
+
+      </p>
+      <dl>
+        <dd>
+          <table border="1">
+            <tbody>
+              <tr bgcolor="#c0c0c0">
+                <th>Sequence</th>
+                <th>Thread 1</th>
+                <th>Thread 2</th>
+              </tr>
+
+              <tr>
+                <td>1</td>
+                <td>counter = 0</td>
+                <td>counter=0</td>
+              </tr>
+
+              <tr>
+                <td>2</td>
+                <td>Thread 1 locked out.<br />
+Thread 2 has exclusive use of variable <tt>counter</tt>
+                </td>
+                <td>counter = 1</td>
+              </tr>
+
+              <tr>
+                <td>3</td>
+                <td>counter = 2</td>
+                <td><br />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </dd>
+      </dl>
+
+<p>
+Code listing: <tt>mutex1.c</tt>
+</p>
+<dl>
+<dd>
+<table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+<tbody>
+<tr bgcolor="#c0c0c0">
+<td>
+<pre class="brush: cpp">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+
+void *functionC();
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+int  counter = 0;
+
+main()
+{
+   int rc1, rc2;
+   pthread_t thread1, thread2;
+
+   /* Create independent threads each of which will execute functionC */
+
+   if( (rc1=pthread_create( &amp;thread1, NULL, &amp;functionC, NULL)) )
+   {
+      printf("Thread creation failed: %d\n", rc1);
+   }
+
+   if( (rc2=pthread_create( &amp;thread2, NULL, &amp;functionC, NULL)) )
+   {
+      printf("Thread creation failed: %d\n", rc2);
+   }
+
+   /* Wait till threads are complete before main continues. Unless we  */
+   /* wait we run the risk of executing an exit which will terminate   */
+   /* the process and all threads before the threads have completed.   */
+
+   pthread_join( thread1, NULL);
+   pthread_join( thread2, NULL); 
+
+   exit(EXIT_SUCCESS);
+}
+
+void *functionC()
+{
+   pthread_mutex_lock( &amp;mutex1 );
+   counter++;
+   printf("Counter value: %d\n",counter);
+   pthread_mutex_unlock( &amp;mutex1 );
+}
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+
+<p>
+Compile: <tt>cc -pthread mutex1.c</tt> (<b>or</b>   <tt>cc -lpthread mutex1.c</tt> for older versions of the GNU compiler which explicitly reference the library)
+<br />
+Run: <tt>./a.out</tt>
+<br />
+Results:
+</p>
+<dl>
+<dd>
+<small>
+<pre>Counter value: 1<br />Counter value: 2<br /></pre>
+</small>
+</dd>
+</dl>
+
+<p>
+When a mutex lock is attempted against a mutex which is held by another thread,
+the thread is blocked until the mutex is unlocked.
+When a thread terminates, the mutex does not unless explicitly unlocked.
+Nothing happens by default.
+</p>
+Man Pages:
+<ul>
+<li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutex_lock">pthread_mutex_lock()</a> - acquire a lock on the specified mutex variable. If the mutex is already locked by another thread, this call will block the calling thread until the mutex is unlocked.
+</li>
+<li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutex_unlock">pthread_mutex_unlock()</a> - unlock a mutex variable. An error is returned if mutex is already unlocked or owned by another thread.
+</li>
+<li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutex_trylock">pthread_mutex_trylock()</a> - attempt to lock a mutex or will return error code if busy. Useful for preventing deadlock conditions.
+</li>
+</ul>
+      <p>
+      </p>
+      <hr />
+      <h3>Joins:</h3>
+
+A join is performed when one wants to wait for a thread to finish. A thread
+calling routine may launch multiple threads then wait for them to finish 
+to get the results. One waits for the completion of the threads with a join.
+<p>
+Sample code: <tt>join1.c</tt>
+</p>
+<dl>
+<dd>
+<table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+<tbody>
+<tr bgcolor="#c0c0c0">
+<td>
+<pre class="brush: cpp">
+#include &lt;stdio.h&gt;
+#include &lt;pthread.h&gt;
+
+#define NTHREADS 10
+void *thread_function(void *);
+pthread_mutex_t mutex1 = PTHREAD_MUTEX_INITIALIZER;
+int  counter = 0;
+
+main()
+{
+   pthread_t thread_id[NTHREADS];
+   int i, j;
+
+   for(i=0; i &lt; NTHREADS; i++)
+   {
+      pthread_create( &amp;thread_id[i], NULL, thread_function, NULL );
+   }
+
+   for(j=0; j &lt; NTHREADS; j++)
+   {
+      pthread_join( thread_id[j], NULL); 
+   }
+  
+   /* Now that all threads are complete I can print the final result.     */
+   /* Without the join I could be printing a value before all the threads */
+   /* have been completed.                                                */
+
+   printf("Final counter value: %d\n", counter);
+}
+
+void *thread_function(void *dummyPtr)
+{
+   printf("Thread number %ld\n", pthread_self());
+   pthread_mutex_lock( &amp;mutex1 );
+   counter++;
+   pthread_mutex_unlock( &amp;mutex1 );
+}
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+
+<p>
+Compile: <tt>cc -pthread join1.c</tt> (<b>or</b> <tt>cc -lpthread join1.c</tt> for older versions of the GNU compiler which explicitly reference the library)
+<br />
+Run: <tt>./a.out</tt>
+<br />
+Results:
+</p>
+<dl>
+<dd>
+<small>
+<pre>
+Thread number 1026
+Thread number 2051
+Thread number 3076
+Thread number 4101
+Thread number 5126
+Thread number 6151
+Thread number 7176
+Thread number 8201
+Thread number 9226
+Thread number 10251
+Final counter value: 10
+</pre>
+</small>
+</dd>
+</dl>
+Man Pages:
+<ul>
+<li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_create">pthread_create()</a> - create a new thread
+</li>
+<li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_join">pthread_join()</a> - wait for termination of another thread
+</li>
+<li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_self">pthread_self()</a> - return identifier of current thread
+</li>
+</ul>
+
+<p>
+</p>
+<hr />
+<h3>Condition Variables:</h3>
+
+<p>
+A condition variable is a variable of type <tt>pthread_cond_t</tt> and is
+used with the appropriate functions for waiting and later, process continuation.
+The condition variable mechanism allows threads to suspend execution and 
+relinquish the processor until some condition is true.
+A  condition  variable  must  always  be associated with a mutex
+to avoid a race condition created by one thread preparing to wait and another 
+thread
+which may signal the condition before the first thread actually  waits on it
+resulting in a deadlock.
+The thread will be perpetually waiting for a signal that is never sent.
+Any mutex can be used, there is no explicit link between the mutex and the 
+condition variable.
+</p>
+<p>
+Man pages of functions used in conjunction with the condition variable:
+</p>
+<ul>
+<li>Creating/Destroying:
+    <ul>
+    <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_init">pthread_cond_init</a>
+    </li>
+    <li>pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+    </li>
+    <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_destroy">pthread_cond_destroy</a>
+    </li>
+    </ul>
+</li>
+<li>Waiting on condition:
+    <ul>
+    <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_wait">pthread_cond_wait</a> - unlocks the mutex and waits for the condition variable cond to be signaled.
+    </li>
+    <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_timedwait">pthread_cond_timedwait</a> - place limit on how long it will block.
+    </li>
+    </ul>
+</li>
+<li>Waking thread based on condition:
+    <ul>
+    <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_signal">pthread_cond_signal</a> - restarts one of the threads that  are  waiting on the condition variable cond.
+    </li>
+            <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_broadcast">pthread_cond_broadcast</a> - wake up all threads blocked by the specified condition variable.
+    </li>
+    </ul>
+</li>
+</ul>
+
+<p>
+Example code: <tt>cond1.c</tt>
+</p>
+<dl>
+<dd>
+<table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+<tbody>
+<tr bgcolor="#c0c0c0">
+<td>
+<pre class="brush: cpp">
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+#include &lt;pthread.h&gt;
+
+pthread_mutex_t count_mutex     = PTHREAD_MUTEX_INITIALIZER;
+pthread_cond_t  condition_var   = PTHREAD_COND_INITIALIZER;
+
+void *functionCount1();
+void *functionCount2();
+int  count = 0;
+#define COUNT_DONE  10
+#define COUNT_HALT1  3
+#define COUNT_HALT2  6
+
+main()
+{
+   pthread_t thread1, thread2;
+
+   pthread_create( &amp;thread1, NULL, &amp;functionCount1, NULL);
+   pthread_create( &amp;thread2, NULL, &amp;functionCount2, NULL);
+
+   pthread_join( thread1, NULL);
+   pthread_join( thread2, NULL);
+
+   printf("Final count: %d\n",count);
+
+   exit(EXIT_SUCCESS);
+}
+
+// Write numbers 1-3 and 8-10 as permitted by functionCount2()
+
+void *functionCount1()
+{
+   for(;;)
+   {
+      // Lock mutex and then wait for signal to relase mutex
+      pthread_mutex_lock( &amp;count_mutex );
+
+      // Wait while functionCount2() operates on count
+      // mutex unlocked if condition varialbe in functionCount2() signaled.
+      pthread_cond_wait( &amp;condition_var, &amp;count_mutex );
+      count++;
+      printf("Counter value functionCount1: %d\n",count);
+
+      pthread_mutex_unlock( &amp;count_mutex );
+
+      if(count &gt;= COUNT_DONE) return(NULL);
+    }
+}
+
+// Write numbers 4-7
+
+void *functionCount2()
+{
+    for(;;)
+    {
+       pthread_mutex_lock( &amp;count_mutex );
+
+       if( count &lt; COUNT_HALT1 || count &gt; COUNT_HALT2 )
+       {
+          // Condition of if statement has been met. 
+          // Signal to free waiting thread by freeing the mutex.
+          // Note: functionCount1() is now permitted to modify "count".
+          pthread_cond_signal( &amp;condition_var );
+       }
+       else
+       {
+          count++;
+          printf("Counter value functionCount2: %d\n",count);
+       }
+
+       pthread_mutex_unlock( &amp;count_mutex );
+
+       if(count &gt;= COUNT_DONE) return(NULL);
+    }
+
+}
+</pre>
+</td>
+</tr>
+</tbody>
+</table>
+</dd>
+</dl>
+
+<p>
+Compile: <tt>cc -pthread cond1.c</tt> (<b>or</b>  <tt>cc -lpthread cond1.c</tt> for older versions of the GNU compiler which explicitly reference the library)
+<br />
+Run: <tt>./a.out</tt>
+<br />
+Results:
+</p>
+<dl>
+<dd>
+<small>
+<pre>
+Counter value functionCount1: 1
+Counter value functionCount1: 2
+Counter value functionCount1: 3
+Counter value functionCount2: 4
+Counter value functionCount2: 5
+Counter value functionCount2: 6
+Counter value functionCount2: 7
+Counter value functionCount1: 8
+Counter value functionCount1: 9
+Counter value functionCount1: 10
+Final count: 10
+</pre>
+</small>
+</dd>
+</dl>
+
+<p>
+Note that <tt>functionCount1()</tt> was halted while count was between the values COUNT_HALT1 and COUNT_HALT2.
+The only thing that has been ensures is that <tt>functionCount2</tt> will 
+increment the count between the values COUNT_HALT1 and COUNT_HALT2. 
+Everything else is random.
+</p>
+<p>
+The logic conditions (the "if" and "while" statements) must be chosen to 
+insure that the "signal" is executed if the "wait" is ever processed.
+Poor software logic can also lead to a deadlock condition.
+</p>
+<p>
+Note: Race conditions abound with this example because count is used as the 
+condition and can't be locked in the while statement without causing deadlock. 
+</p>
+<a name="SCHEDULING"></a>
+<p>
+</p>
+<hr size="5" />
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td>Thread Scheduling:</td>
+</tr>
+</tbody>
+</table>
+
+      <p>
+When this option is enabled, each thread may have its own scheduling properties.
+Scheduling attributes may be specified:
+      </p>
+      <ul>
+        <li>during thread creation
+        </li>
+        <li>by dynamically by changing the attributes of a thread already created
+        </li>
+        <li>by defining the effect of a mutex on the thread's scheduling when creating a mutex
+        </li>
+        <li>by dynamically changing the scheduling of a thread during synchronization operations.
+        </li>
+      </ul>
+
+The threads library provides default values that are sufficient for most cases. 
+<a name="PITFALLS"></a>
+<p>
+</p>
+<hr size="5" />
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td>Thread Pitfalls:</td>
+</tr>
+</tbody>
+</table>
+
+      <p>
+      </p>
+      <ul>
+        <li>Race conditions: While the code may appear on the screen in the order
+    you wish the code to execute, threads are scheduled by the operating
+    system and are executed at random. It cannot be assumed that threads
+    are executed in the order they are created. They may also execute at 
+    different speeds. When threads are executing (racing to complete) they
+    may give unexpected results (race condition). Mutexes and joins must be 
+    utilized to achieve a predictable execution order and outcome.
+          <p>
+          </p>
+        </li>
+        <li>Thread safe code: The threaded routines must call functions which are
+    "thread safe". This means that there are no static or global variables which
+    other threads may clobber or read assuming single threaded operation.
+    If static or global variables are used then mutexes must be applied or
+    the functions must be re-written to avoid the use of these variables.
+    In C, local variables are dynamically allocated on the stack.
+    Therefore, any function that does not use static data or other shared 
+    resources is thread-safe. Thread-unsafe functions may be used by only one 
+    thread at a time in a program and the uniqueness of the thread must be 
+    ensured. 
+    Many non-reentrant functions return a pointer to static data.
+    This can be avoided by returning dynamically allocated data or
+    using caller-provided storage.
+    An example of a non-thread safe function is <tt>strtok</tt> which is also
+    not re-entrant. The "thread safe" version is the re-entrant version
+    <tt>strtok_r</tt>.
+          <p>
+          </p>
+        </li>
+        <li>Mutex Deadlock: This condition occurs when a mutex is applied but then not 
+    "unlocked". This causes program execution to halt indefinitely.
+    It can also be caused by poor application of mutexes or joins.
+    Be careful when applying two or more mutexes to a section of code. 
+    If the first pthread_mutex_lock is applied and the second pthread_mutex_lock
+    fails due to another thread applying a mutex, the first mutex 
+    may eventually lock all other threads from accessing data including the 
+    thread which holds the second mutex.  The threads
+    may wait indefinitely for the resource to become free causing a deadlock.
+    It is best to test and if failure occurs, free the resources and stall
+    before retrying.
+    
+          <table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+              <tbody>
+              <tr bgcolor="#c0c0c0">
+                <td>
+                <pre class="brush: cpp">
+    ...
+    pthread_mutex_lock(&amp;mutex_1);
+    while ( pthread_mutex_trylock(&amp;mutex_2) )  /* Test if already locked   */
+    {
+       pthread_mutex_unlock(&amp;mutex_1);  /* Free resource to avoid deadlock */
+       ...
+       /* stall here   */
+       ...
+       pthread_mutex_lock(&amp;mutex_1);
+    }
+    count++;
+    pthread_mutex_unlock(&amp;mutex_1);
+    pthread_mutex_unlock(&amp;mutex_2);
+    ...
+              </pre>
+              </td>
+              </tr>
+
+    
+            </tbody>
+          </table>
+
+    
+          <p>
+    The order of applying the mutex is also important. The following code 
+    segment illustrates a potential for deadlock:
+    </p>
+          <table bgcolor="#000000" border="1" cellpadding="4" cellspacing="1" width="100%">
+             <tbody>
+              <tr bgcolor="#c0c0c0">
+                <td>
+                <pre class="brush: cpp">
+    void *function1()
+    {
+       ...
+       pthread_mutex_lock(&amp;lock1);           // Execution step 1
+       pthread_mutex_lock(&amp;lock2);           // Execution step 3 DEADLOCK!!!
+       ...
+       ...
+       pthread_mutex_lock(&amp;lock2);
+       pthread_mutex_lock(&amp;lock1);
+       ...
+    } 
+
+    void *function2()
+    {
+       ...
+       pthread_mutex_lock(&amp;lock2);           // Execution step 2
+       pthread_mutex_lock(&amp;lock1);
+       ...
+       ...
+       pthread_mutex_lock(&amp;lock1);
+       pthread_mutex_lock(&amp;lock2);
+       ...
+    } 
+  
+    main()
+    {
+       ...
+       pthread_create(&amp;thread1, NULL, function1, NULL);
+       pthread_create(&amp;thread2, NULL, function2, NULL);
+       ...
+    }
+              </pre>
+              </td>
+              </tr>
+            </tbody>
+          </table>
+    If <tt>function1</tt> acquires the first mutex and <tt>function2</tt>
+    acquires the second, all resources are tied up and locked.
+    <p>
+    </p>
+        </li>
+        <li>Condition Variable Deadlock: 
+    The logic conditions (the "if" and "while" statements) must be chosen to 
+    insure that the "signal" is executed if the "wait" is ever processed.
+        </li>
+      </ul>
+
+<a name="DEBUGGING"></a>
+<p>
+</p>
+<hr size="5" />
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td>Thread Debugging:</td>
+</tr>
+</tbody>
+</table>
+
+<p>
+</p>
+<ul>
+<li><b>GDB:</b>
+    <ul>
+    <li><a href="http://sources.redhat.com/gdb/current/onlinedocs/gdb/Threads.html#Threads">Debugging Programs with Multiple Threads</a>
+    </li>
+    <li><a href="http://sources.redhat.com/gdb/current/onlinedocs/gdb/Thread-Stops.html#Thread-Stops">GDB: Stopping and starting multi-thread programs</a>
+    </li>
+    <li><a href="http://sources.redhat.com/gdb/current/onlinedocs/gdb/GDB_002fMI-Thread-Commands.html#GDB_002fMI-Thread-Commands">GDB/MI: Threads commands</a>
+    </li>
+    </ul>
+</li>
+<li><b>DDD:</b>
+    <ul>
+    <li><a href="http://www.gnu.org/software/ddd/manual/html_mono/ddd.html#Threads">Examining Threads</a>
+    </li>
+    </ul>
+</li>
+</ul>
+
+<a name="MANPAGES"></a>
+<p>
+</p>
+<hr size="5" />
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td>Thread Man Pages:</td>
+</tr>
+</tbody>
+</table>
+<p>
+</p>
+      <ul>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_atfork">pthread_atfork</a>  - register handlers to be called at fork(2) time
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_destroy">pthread_attr_destroy</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getdetachstate">pthread_attr_getdetachstate</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getguardsize">pthread_attr_getguardsize</a> - get the  guardsize attribute  in the attr object.
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getinheritsched">pthread_attr_getinheritsched</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getschedparam">pthread_attr_getschedparam</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getschedpolicy">pthread_attr_getschedpolicy</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getscope">pthread_attr_getscope</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getstack">pthread_attr_getstack</a> - get the thread creation stack attributes stackaddr and stacksize in the attr object.
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getstackaddr">pthread_attr_getstackaddr</a> - get the thread creation stackaddr attributes stackaddr attribute in the attr object.
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_getstacksize">pthread_attr_getstacksize</a> - get the thread creation  stacksize attribute in the attr object.
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_init">pthread_attr_init</a>    - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setdetachstate">pthread_attr_setdetachstate</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setguardsize">pthread_attr_setguardsize</a> - set the  guardsize attribute  in the attr object.
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setinheritsched">pthread_attr_setinheritsched</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setschedparam">pthread_attr_setschedparam</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setschedpolicy">pthread_attr_setschedpolicy</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setscope">pthread_attr_setscope</a> [pthread_attr_init] - thread creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setstack">pthread_attr_setstack</a> - set the thread creation stack attributes stackaddr and stacksize in the attr object.
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setstackaddr">pthread_attr_setstackaddr</a> - set the thread creation stackaddr attributes stackaddr attribute in the attr object.
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_attr_setstacksize">pthread_attr_setstacksize</a> - set the thread creation  stacksize attribute in the attr object.
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cancel">pthread_cancel</a>       - thread cancellation
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cleanup_pop">pthread_cleanup_pop</a> [pthread_cleanup_push] - install and remove cleanup handlers
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cleanup_pop_restore_np">pthread_cleanup_pop_restore_np</a> [pthread_cleanup_push] - install and remove cleanup handlers
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cleanup_push">pthread_cleanup_push</a> - install and remove cleanup handlers
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cleanup_push_defer_np">pthread_cleanup_push_defer_np</a> [pthread_cleanup_push] - install and remove cleanup handlers
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_condattr_destroy">pthread_condattr_destroy</a> [pthread_condattr_init] - condition creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_condattr_init">pthread_condattr_init</a> - condition creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_broadcast">pthread_cond_broadcast</a> [pthread_cond_init] - operations on conditions
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_destroy">pthread_cond_destroy</a> [pthread_cond_init] - operations on conditions
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_init">pthread_cond_init</a>    - operations on conditions
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_signal">pthread_cond_signal</a> [pthread_cond_init] - operations on conditions
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_timedwait">pthread_cond_timedwait</a> [pthread_cond_init] - operations on conditions
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_cond_wait">pthread_cond_wait</a> [pthread_cond_init] - operations on conditions
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_create">pthread_create</a>       - create a new thread
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_detach">pthread_detach</a>       - put a running thread in the detached state
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_equal">pthread_equal</a>        - compare two thread identifiers
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_exit">pthread_exit</a>         - terminate the calling thread
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_getschedparam">pthread_getschedparam</a> [pthread_setschedparam] - control thread scheduling parameters
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_getspecific">pthread_getspecific</a> [pthread_key_create] - management of thread-specific data
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_join">pthread_join</a>         - wait for termination of another thread
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_key_create">pthread_key_create</a>   - management of thread-specific data
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_key_delete">pthread_key_delete</a> [pthread_key_create] - management of thread-specific data
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_kill_other_threads_np">pthread_kill_other_threads_np</a> - terminate all threads in program except calling thread
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_kill">pthread_kill</a> [pthread_sigmask] - handling of signals in threads
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutexattr_destroy">pthread_mutexattr_destroy</a> [pthread_mutexattr_init] - mutex creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutexattr_getkind_np">pthread_mutexattr_getkind_np</a> [pthread_mutexattr_init] - mutex creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutexattr_init">pthread_mutexattr_init</a> - mutex creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutexattr_setkind_np">pthread_mutexattr_setkind_np</a> [pthread_mutexattr_init] - mutex creation attributes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutex_destroy">pthread_mutex_destroy</a> [pthread_mutex_init] - operations on mutexes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutex_init">pthread_mutex_init</a>   - operations on mutexes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutex_lock">pthread_mutex_lock</a> [pthread_mutex_init] - operations on mutexes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutex_trylock">pthread_mutex_trylock</a> [pthread_mutex_init] - operations on mutexes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_mutex_unlock">pthread_mutex_unlock</a> [pthread_mutex_init] - operations on mutexes
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_once">pthread_once</a>         - once-only initialization
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_self">pthread_self</a>         - return identifier of current thread
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_setcancelstate">pthread_setcancelstate</a> [pthread_cancel] - thread cancellation
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_setcanceltype">pthread_setcanceltype</a> [pthread_cancel] - thread cancellation
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_setschedparam">pthread_setschedparam</a> - control thread scheduling parameters
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_setspecific">pthread_setspecific</a> [pthread_key_create] - management of thread-specific data
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_sigmask">pthread_sigmask</a>      - handling of signals in threads
+        </li>
+        <li><a href="http://man.yolinux.com/cgi-bin/man2html?cgi_command=pthread_testcancel">pthread_testcancel</a> [pthread_cancel] - thread cancellation
+        </li>
+      </ul>
+
+<a name="LINKS"></a>
+<p>
+</p>
+<hr size="5" />
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td>Links:</td>
+</tr>
+</tbody>
+</table>
+
+      <p>
+      </p>
+      <ul>
+      <li><a href="http://www.systemlogic.net/articles/01/6/multithreading/print.php">Fundamentals Of Multithreading</a> - Paul Mazzucco
+      </li>
+      <li><a href="http://people.redhat.com/drepper/nptl-design.pdf">Native Posix Thread Library for Linux</a>
+      </li>
+      <li>Posix threads for MS/Win32: [<a href="http://sources.redhat.com/pthreads-win32/announcement.html">Announcement / description</a>] <a href="http://sourceware.org/pthreads-win32/">sourceforge home page</a>
+      </li>
+      <li><a href="http://www.mit.edu/people/proven/IAP_2000/index.html">Introduction to Programming Threads</a>
+      </li>
+      <li><a href="http://www.gnu.org/software/pth/">GNU Portable Threads</a>
+      </li>
+      <li><a href="http://members.aol.com/drbutenhof/ThreadTable.html">Comparison of thread implementations</a>
+      </li>
+      <li><a href="http://www.serpentine.com/%7Ebos/threads-faq/">comp.programming.threads FAQ</a>
+      </li>
+      <li><a href="http://www.csce.uark.edu/%7Eaapon/courses/os/examples/">Examples</a>
+      </li>
+      <li><a href="http://www.cs.nmsu.edu/%7Ejcook/Tools/pthreads/pthreads.html">Pthreads tutorial and examples of thread problems</a> - by Andrae Muys
+      </li>
+      <li><a href="http://valgrind.org/docs/manual/hg-manual.html">Helgrind: Valgrind KDE thread checker</a>
+      </li>
+      <li><a href="http://docs.sun.com/?q=%22Multithreaded+Programming+Guide%22&amp;p=/doc/802-5938">Sun's Multithreaded Programming Guide</a> - Not Linux but a good reference.
+      </li>
+      <li>Platform independent threads:
+          <ul>
+          <li><a href="http://developer.gnome.org/glib/2.31/glib-Threads.html">Gnome GLib 2 threads</a> - Thread abstraction; including mutexes, conditions and thread private data.
+            [<a href="http://developer.gnome.org/gdk/unstable/gdk-Threads.html">example</a>]
+          </li>
+          <li><a href="http://omniorb.sourceforge.net/omni40/omnithread.html">OmniORB (CORBA) Thread Library</a>
+          </li>
+          <li><a href="http://zthread.sourceforge.net">zThreads</a>
+          </li>
+          </ul>
+      </li>
+      <li><b>C++ Thread classes:</b>
+          <ul>
+          <li><a href="http://www.gnu.org/software/commoncpp/">GNU: Common C++</a> - support for threading, sockets, file access, daemons, persistence, serial I/O, XML parsing and system services
+          </li>
+          <li><a href="http://www.cs.wustl.edu/%7Eschmidt/ACE.html">ACE: Adaptive Communication Environment</a> - C++ interface
+              <ul>
+              <li>ACE programmers guide: <a href="http://www.cs.wustl.edu/%7Eschmidt/PDF/ACE-tutorial.pdf">[pdf] (see page 29 for threads)</a>
+              </li>
+              </ul>
+          </li>
+          <li><a href="http://threads.sourceforge.net/">C++ Thread classes</a> - sourceforge
+          </li>
+          <li><a href="http://sourceforge.net/projects/qpthread/">QpThread</a>
+          </li>
+          </ul>
+        </li>
+      </ul>
+
+      <p>
+News Groups:
+      </p>
+      <ul>
+        <li>comp.programming.threads 
+        </li>
+        <li>comp.unix.solaris 
+        </li>
+      </ul>
+
+<a name="BOOKS"></a>
+<p>
+</p>
+<hr size="5" />
+<table class="labelbar" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top"><img src="images/book40.gif" />Books:</td>
+</tr>
+</tbody>
+</table>
+
+<p> 
+</p>
+<dl>
+<dd>
+<table cellpadding="5" border="1">
+<tbody>
+    <tr>
+    <td><img src="../BOOKS/1565921151.01.MZZZZZZZ.jpg" /></td>
+    <td valign="top">
+    Pthreads Programming A POSIX Standard for Better Multiprocessing
+    <br />
+    By Bradford Nichols, Dick Buttlar, Jacqueline Proulx Farrell
+    <br />
+    ISBN #1-56592-115-1, O'Reilly
+    <p>
+    </p>
+    </td>
+    <td valign="top">
+    <a rel="nofollow" href="http://www.amazon.com/gp/redirect.html?ie=UTF8&location=http://www.amazon.com/exec/obidos/ASIN/1565921151/&tag=yolinux-20"><img src="images/Amazon-BuyABook88x31.gif" alt="Amazon.com" /></a>
+    <br />
+    </td>
+    </tr>
+
+
+    <tr>
+    <td><img src="../BOOKS/0201633922.01.MZZZZZZZ.jpg" /></td>
+
+    <td valign="top">
+    Programming with POSIX(R) Threads
+    <br />
+    By David R. Butenhof
+    <br />
+    ISBN #0201633922, Addison Wesley Pub. Co.
+    <p>
+    </p>
+    </td>
+    <td valign="top">
+    <a rel="nofollow" href="http://www.amazon.com/gp/redirect.html?ie=UTF8&location=http://www.amazon.com/exec/obidos/ASIN/0201633922/&tag=yolinux-20"><img src="images/Amazon-BuyABook88x31.gif" alt="Amazon.com" /></a>
+    <br />
+    </td>
+    </tr>
+
+    <tr>
+    <td><img src="../BOOKS/0201604647.01.MZZZZZZZ.jpg" /></td>
+
+    <td valign="top">
+    C++ Network Programming Volume 1
+    <br />
+    By Douglas C. Schmidt, Stephen D. Huston
+    <br />
+    ISBN #0201604647, Addison Wesley Pub. Co.
+    <p>
+    Covers ACE (ADAPTIVE Communication Environment) open-source framework view of threads and other topics.
+    </p>
+    <p>
+    </p>
+    </td>
+    <td valign="top">
+    <a rel="nofollow" href="http://www.amazon.com/gp/redirect.html?ie=UTF8&location=http://www.amazon.com/exec/obidos/ASIN/0201604647/&tag=yolinux-20"><img src="images/Amazon-BuyABook88x31.gif" alt="Amazon.com" /></a>
+    <br />
+    </td>
+    </tr>
+    </tbody>
+    </table>
+
+    </dd>
+    </dl>
+
+    </td>
+    <td class="rightcol">
+    <!-- AddThis Button BEGIN -->
+<div id="bookmark" align="left">
+&nbsp;&nbsp;&nbsp;
+<!-- Google +1: Place this tag where you want the +1 button to render -->
+<div class="g-plusone" data-size="small" data-count="true"></div>
+<br />
+&nbsp;&nbsp;&nbsp;
+<a rel="nofollow" href="http://www.addthis.com/bookmark.php?v=250&pub=yolinux" onmouseover="return addthis_open(this, '', '[URL]', '[TITLE]')" onmouseout="addthis_close()" onclick="return addthis_sendto()"><img src="http://s7.addthis.com/static/btn/lg-bookmark-en.gif" width="125" height="16" alt="Bookmark and Share" style="border:0"/></a>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js?pub=yolinux">
+</script>
+</div>
+<!-- AddThis Button END -->
+<!-- Commission Junction START -->
+<!--
+<hr />
+<p>
+</p>
+<div align="center">
+<script type="text/javascript" language="javascript" src="http://www.jdoqocy.com/placeholder-6006807?target=_blank&mouseover=Y"></script>
+</div>
+-->
+<!-- Commission Junction END -->
+<p>
+</p>
+<hr />
+<div align="center">
+<p>
+<font color="#505050">Advertisements</font>
+</p>
+<iframe class="adframe" scrolling="no" allowTransparency="true"
+marginheight="0" marginwidth="0"
+width="160" frameborder="0" height="600"
+style='border:none;width:160;height:600;padding:0;'
+src="/ADVERTISING/iframe160px-MediaDotNet.html">
+</iframe>
+</div>
+
+<!-- Commission Junction START -->
+<!--
+<p>
+</p>
+<hr />
+<div align="center">
+<p>
+<font color="#f0f0f0">Advertisement</font>
+</p>
+<b>Levono UK:</b>
+<br />
+<script type="text/javascript" language="javascript" src="http://www.jdoqocy.com/placeholder-5880661?target=_blank&mouseover=Y"></script>
+</div>
+-->
+<!-- Commission Junction END -->
+
+<p>
+</p>
+<hr />
+<iframe src="http://rcm.amazon.com/e/cm?t=yolinux-20&o=1&p=14&l=bn1&mode=pc-hardware&browse=172455&fc1=000000&lt1=_blank&lc1=3366FF&bg1=C0C0C0&f=ifr" marginwidth="0" marginheight="0" width="160" height="600" border="0" frameborder="0" style="border:none;" scrolling="no"></iframe>
+<p>
+</p>
+<hr />
+<p>
+</p>
+<script type="text/javascript">
+<!-- 
+var jobthread_widget_title = "Jobs";
+var jobthread_widget_outer_style = "background-color:#dddddd;border:1px solid #999999;width:160px;";
+var jobthread_widget_inner_style = "background-color:#ffffff;color:#666666;border:1px solid #999999;margin-left:10px;margin-right:10px;padding:10px 10px 2px 8px;font:11px Arial, Helvetica, Sans-serif;line-height:16px;";
+var jobthread_widget_title_style = "color:#313131;font-weight:bold;";
+var jobthread_widget_link_style = "color:#0464bb;font-size:11px;font-weight:normal;text-decoration:none;border:none;";
+var jobthread_widget_top_style = "padding-top:8px;";
+var jobthread_widget_bottom_style = "padding-bottom:4px;";
+//-->
+</script>
+<script type="text/javascript" src="http://edge.jobthread.com/widget/?id=c0e4b3&num_jobs=10"></script>
+
+<p>
+</p>
+<hr />
+<p>
+</p>
+
+    </td>
+    </tr>
+  </tbody>
+</table>
+<div id="footer">
+<table width="100%" bgcolor="#646664" cellpadding="4" background="http://www.yolinux.com/TUTORIALS/images/footer_pattern.png">
+<tbody>
+<tr>
+<td valign="bottom">
+<font size="-1" color="#ffcc33">
+<b>
+<a class="footer" href="http://www.yolinux.com">YoLinux.com Home Page</a>
+<br />
+<a class="footer" href="http://www.yolinux.com/TUTORIALS/">YoLinux Tutorial Index</a> |
+<a class="footer" href="http://www.yolinux.com/YoLinux-Terms.html">Terms</a>
+<br />
+<a class="footer" href="http://www.yolinux.com/privacy.html">Privacy Policy</a> |
+<a class="footer" href="http://www.yolinux.com/YoLinux-Advertising.html">Advertise with us</a> | 
+<a class="footer" href="http://www.yolinux.com/YoLinuxEmailForm.html">Feedback Form</a> |
+<br />
+Unauthorized copying or redistribution prohibited.
+</b>
+</font>
+</td>
+<td align="center" valign="bottom">
+   <script src="http://www.stumbleupon.com/hostedbadge.php?s=5"></script>
+</td>
+<td align="center" valign="bottom">
+<!-- Place this tag where you want the +1 button to render -->
+<div class="g-plusone" data-size="tall" data-count="true"></div>
+</td>
+<td align="center" valign="bottom">
+<script src="http://widgets.digg.com/buttons.js" type="text/javascript"></script>
+<a class="DiggThisButton DiggMedium" rev="linux_unix">
+<span style="display:none">
+YoLinux Tutorials. Linux Information Portal includes informative tutorials and links to many Linux sites.
+</span>
+</a>
+</td>
+<td align="center" valign="bottom">
+<p>
+</p>
+<!-- AddThis Button BEGIN -->
+<a rel="nofollow" href="http://www.addthis.com/bookmark.php?v=250&pub=yolinux" onmouseover="return addthis_open(this, '', '[URL]', '[TITLE]')" onmouseout="addthis_close()" onclick="return addthis_sendto()"><img src="http://s7.addthis.com/static/btn/lg-bookmark-en.gif" width="125" height="16" alt="Bookmark and Share" style="border:0"/></a>
+<script type="text/javascript" src="http://s7.addthis.com/js/250/addthis_widget.js?pub=yolinux">
+</script>
+<!-- AddThis Button END -->
+</td>
+<td valign="top">
+<div align="right">
+<font size="-1" color="#ffcc33"><a class="footer" href="#TOP">to top of page</a></font>
+<br />
+<script type="text/javascript"><!--
+google_ad_client = "pub-8567479315106986";
+/* 234x60, created 4/23/10 */
+google_ad_slot = "8214196957";
+google_ad_width = 234;
+google_ad_height = 60;
+//-->
+</script>
+<script type="text/javascript"
+src="http://pagead2.googlesyndication.com/pagead/show_ads.js">
+</script>
+</div>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>
+</p>
+
+<small>Copyright &copy; 2002 - 2014 by <i>Greg Ippolito</i></small>
+<!-- Start Quantcast tag -->
+<script type="text/javascript">
+  var _qevents = _qevents || [];
+
+  (function() {
+   var elem = document.createElement('script');
+
+   elem.src = (document.location.protocol == "https:" ? "https://secure" : "http://edge") + ".quantserve.com/quant.js";
+   elem.async = true;
+   elem.type = "text/javascript";
+   var scpt = document.getElementsByTagName('script')[0];
+   scpt.parentNode.insertBefore(elem, scpt);  
+  })();
+</script>
+<script type="text/javascript">
+_qevents.push( { qacct:"p-ebIBcaVUngFBQ"} );
+</script>
+<noscript>
+<div style="display: none;"><img src="//pixel.quantserve.com/pixel/p-ebIBcaVUngFBQ.gif" height="1" width="1" alt="Quantcast"/></div>
+</noscript>
+<!-- End Quantcast tag -->
+
+
+<!-- Start Google +1 tag -->
+<!-- Place this tag in your head or just before your close body tag -->
+<script type="text/javascript" src="https://apis.google.com/js/plusone.js"></script>
+<!-- End Google +1 tag -->
+
+
+<!-- Start Google Analytics tag -->
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+var pageTracker = _gat._getTracker("UA-3317450-1");
+pageTracker._initData();
+pageTracker._trackPageview();
+</script>
+<!-- End Google Analytics tag -->
+
+
+</body>
+</html>
