@@ -22,8 +22,8 @@ class Wrapper: public Packing{
 class Item{
     public:
         virtual string name() = 0;
-        virtual Packing* getPacking();
-        virtual float getPrice();
+        virtual Packing* getPacking() = 0;
+        virtual float getPrice() = 0;
 };
 
 class Burger: public Item{
