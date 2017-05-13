@@ -7,39 +7,23 @@ using namespace std;
 
 int share = 0;
 mutex mut;
-condition_variable cveven, cvodd;
 
-void printeven(int id ){
+void print(int id ){
 	int i = id;
-	unique_lock<mutex> lk;
 	while(i < 100){
-		//mut.lock();
-		cveven.wait(lk);
-		if(share == 0)
+		mut.lock();
+		if(share == id){
 			cout << id << " => " << i << endl;
-		i += 2;
-		cvodd.notify_one();
-		lk.unlock();
+			i += 2;
+			share = 1-id;
+		}
+		mut.unlock();
 	}
 }
 
-void printodd(int id ){
-	int i = id;
-	unique_lock<mutex> lk;
-	while(i < 100){
-		//mut.lock();
-		cvodd.wait(lk);
-		if(share == 0)
-			cout << id << " => " << i << endl;
-		i += 2;
-		cveven.notify_one();
-		lk.unlock();	
-	}
-}
 int main() {
-	thread t1{printeven, 0};
-	thread t2{printodd, 1};
-	cveven.notify_one();
+	thread t1{print, 0};// even thread
+	thread t2{print, 1};//odd thread
 	t1.join();
 	t2.join();
 	return 0;
