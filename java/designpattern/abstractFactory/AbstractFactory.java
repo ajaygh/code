@@ -1,5 +1,5 @@
 public class AbstractFactory {
-    public Factory getFactory(String factoryType) {
+    public static Factory getFactory(String factoryType) {
         if(factoryType == null)
             return null;
         if(factoryType.equalsIgnoreCase("SHAPE")){

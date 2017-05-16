@@ -1,9 +1,7 @@
 public class AbstractFactoryDemo {
     public static void main(String[] args) {
-        AbstractFactory abstractFactory = new AbstractFactory();
-
-        Factory shapeFactory = abstractFactory.getFactory("shape");
-        Factory colorFactory = abstractFactory.getFactory("color");
+        Factory shapeFactory = AbstractFactory.getFactory("shape");
+        Factory colorFactory = AbstractFactory.getFactory("color");
         
         Shape square = shapeFactory.getShape("square");
         square.draw();
